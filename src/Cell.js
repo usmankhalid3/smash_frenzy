@@ -46,15 +46,15 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.selectCell = function() {
-
+		//TODO: implement it's animation
 	};
 
 	this.deselectCell = function() {
-
+		//TODO: implement it's animation
 	};
 
-	this.getGem = function() {
-		return this._gem;
+	this.getGemType = function() {
+		return this._gem.getType();
 	};
 
 	this.isFilled = function() {

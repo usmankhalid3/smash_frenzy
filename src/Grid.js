@@ -11,14 +11,8 @@ var GRID_WIDTH  = 7,
 	CELL_BOUND_LEFT = 2,
 	CELL_BOUND_RIGHT = 5,
 	FILLED_CELL_PROB = 100,
-	ANIM_INTERVAL = 100;
-
-var SWAP_DIR = {
-	NA: 0,
-	LR: 1,
-	TB: 2
-};
-
+	ANIM_INTERVAL_SWAP = 100,
+	ANIM_INTERVAL_REV  = 200;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -36,16 +30,8 @@ exports = Class(ui.View, function (supr) {
 
 		this.setupGrid();
 
-/*
-		this.on("InputSelect", bind(this, function(evt, pt) {
-			console.log("touched at: " + pt.x + ", " + pt.y);
-			var cell = this.getTouchedCell(pt.x, pt.y);
-			console.log("selected cell: " + cell[0] + ", " + cell[1]);
-		}));
-*/
 		this.on("InputStart", this.onTouchStarted.bind(this));
 		this.on("InputMove", this.onDragStarted.bind(this));
-		//this.on("InputSelect", this.onTouchEnded.bind(this));
 	};
 
 	this.setupGrid = function() {
@@ -53,14 +39,19 @@ exports = Class(ui.View, function (supr) {
 		for (var i = 0; i < GRID_WIDTH; i++) {
 			this._cells[i] = new Array(GRID_HEIGHT);
 			for (var j = 0; j < GRID_HEIGHT; j++) {
-				var cellType = this.randomCell(i, j);
-				var cell = new Cell({cellType: cellType});
-				cell.style.x = cell.style.x + (i * Cell.CELL_DIM.WIDTH);
-				cell.style.y = cell.style.y + (j * Cell.CELL_DIM.HEIGHT);
-				this._cells[i][j] = cell;
-				this.addSubview(cell);
+				this.createCell(i, j);
 			}
 		}
+	};
+
+	this.createCell = function(i, j) {
+		//TODO: add check about neighboring cells being of different color
+		var cellType = this.randomCell(i, j);
+		var cell = new Cell({cellType: cellType});
+		cell.style.x = cell.style.x + (i * Cell.CELL_DIM.WIDTH);
+		cell.style.y = cell.style.y + (j * Cell.CELL_DIM.HEIGHT);
+		this._cells[i][j] = cell;
+		this.addSubview(cell);
 	};
 
 	this.randomCell = function(i, j) {
@@ -95,10 +86,12 @@ exports = Class(ui.View, function (supr) {
 			console.log("touched at: " + pt.x + ", " + pt.y);
 			var coords = this.getTouchedCell(pt);
 			var cell = this._cells[coords.x][coords.y];
-			cell.selectCell();
-			this._selectedCell = cell;
-			this._selectedCellCoords = coords;
-			console.log("selected cell: " + coords.x + ", " + coords.y);
+			if (cell.isFilled()) {
+				cell.selectCell();
+				this._selectedCell = cell;
+				this._selectedCellCoords = coords;
+				console.log("selected cell: " + coords.x + ", " + coords.y);
+			}
 		}
 	};
 
@@ -110,13 +103,10 @@ exports = Class(ui.View, function (supr) {
 		if (this._selectedCell != null) {
 			var coords = this.getTouchedCell(pt);
 			if (this.sameCells(this._selectedCellCoords, coords) == false) {
-				var coords = this.getTouchedCell(pt);
 				var destCell = this._cells[coords.x][coords.y];
 				if (destCell.isFilled()) {
-					if (this.canBeSwapped(this._selectedCell, destCell)) {
-						this.swap(this._selectedCellCoords, coords);
-						console.log("Swapped!");
-					}
+					this.swap(this._selectedCellCoords, coords);
+					animate(this).wait(ANIM_INTERVAL_REV).then(this.proceedAfterSwap.bind(this, this._selectedCellCoords, coords));
 				}
 				else {
 					//TODO
@@ -130,67 +120,76 @@ exports = Class(ui.View, function (supr) {
 		}
 	};
 
-	this.canBeSwapped = function(src, des) {
-		return true;	//TODO implement this!
-	};
-
-	this.swapDirection = function(src, des) {
-		if (des.x > src.x || des.x < src.x) {
-			return SWAP_DIR.LR;
-		}
-		else if (des.y > src.y || des.y < src.y) {
-			return SWAP_DIR.TB;
+	this.proceedAfterSwap = function(src, des) {
+		var coords = this.trySmash(des)
+		if (coords.length < 3) {
+			this.swap(des, src); // cannot smash so reverse the swap
 		}
 		else {
-			return SWAP_DIR.NA;
+			this.smash(coords);
+		}
+	};
+
+	this.smash = function(coords) {
+		for (var i = 0; i < coords.length; i++) {
+			var x = coords[i].x;
+			var y = coords[i].y;
+			var cell = this._cells[x][y];
+
 		}
 	};
 
 	this.swap = function(src, des) {
-		var swapDir = this.swapDirection(src, des);
-		if (swapDir == SWAP_DIR.NA) {
-			return;	// same cell, no swap needed?
-		}
-		console.log("Swap direction: " + swapDir);
 		var srcCell  = this._cells[src.x][src.y];
 		var destCell = this._cells[des.x][des.y];
 		var x = srcCell.style.x;
 		var y = srcCell.style.y;
 
-		if (swapDir == SWAP_DIR.LR) {
-			animate(this._cells[src.x][src.y]).now({x: destCell.style.x}, ANIM_INTERVAL);
-			animate(this._cells[des.x][des.y]).now({x: x}, ANIM_INTERVAL);
-		}
-		else if (swapDir == SWAP_DIR.TB) {
-			animate(this._cells[src.x][src.y]).now({y: destCell.style.y}, ANIM_INTERVAL);
-			animate(this._cells[des.x][des.y]).now({y: y}, ANIM_INTERVAL);
-		}
-
+		animate(this._cells[src.x][src.y]).now({x: destCell.style.x, y: destCell.style.y}, ANIM_INTERVAL_SWAP);
+		animate(this._cells[des.x][des.y]).now({x: x, y: y}, ANIM_INTERVAL_SWAP);
+		
 		this._cells[src.x][src.y] = destCell;
 		this._cells[des.x][des.y] = srcCell;
-
 	};
 
-	/*
-	this.onTouchEnded = function(evt, pt) {
-		if (this._selectedCell != null) {
-			var coords = this.getTouchedCell(pt);
-			var destCell = this._cells[coords.x][coords.y];
-			if (destCell.isFilled()) {
-				if (this.canBeSwapped(this._selectedCell, destCell)) {
-					this.swap(this._selectedCellCoords, coords);
-					console.log("Swapped!");
-				}
+	this.trySmash = function(des) {
+		var x = des.x;
+		var y = des.y;
+		var destCell = this._cells[x][y];
+		var coords = new Array();
+		coords.push({x: x, y: y});
+		if (y > 0) {
+			var newY = y - 1;
+			while (newY >= 0 && (cell = this._cells[x][newY]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
+				coords.push({x: x, y: newY});
+				newY = newY - 1;
 			}
-			else {
-				//TODO
-			}
-			this._selectedCell.deselectCell();
-			this._selectedCellCoords = null;
-			this._selectedCell = null;
-			console.log("cell deselected");
 		}
+		if (y < GRID_HEIGHT) {
+			var newY = y + 1;
+			while (newY <= GRID_HEIGHT && (cell = this._cells[x][newY]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
+				coords.push({x: x, y: newY});
+				newY = newY + 1;
+			}
+		}
+		if (x > 0) {
+			var newX = x - 1;
+			while (newX >= 0 && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
+				coords.push({x: newX, y: y});
+				newX = newX - 1;
+			}
+		}
+		if (x < GRID_WIDTH) {
+			var newX = x + 1;
+			while (newX >= 0 && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
+				coords.push({x: newX, y: y});
+				newX = newX + 1;
+			}
+		}
+		for (var i = 0; i < coords.length; i++) {
+			console.log("SMASH: " + coords[i].x + ", " + coords[i].y);
+		}
+		return coords;
 	};
-	*/
 
 });

@@ -32,7 +32,6 @@ exports = Class(ui.View, function (supr) {
 
 	};
 
-
 	this.build = function() {
 		var selectedGem = GEM_IMAGES[this._gemType];  // FIXME: Do it better way?
 		this._gemView = new ui.ImageView({
@@ -43,6 +42,10 @@ exports = Class(ui.View, function (supr) {
 			width: 30,
 			height: 30,
 		});
+	};
+
+	this.getType = function() {
+		return this._gemType;
 	};
 });
 

@@ -46,10 +46,25 @@ exports = Class(ui.View, function (supr) {
 		}
 	};
 
+	this.randomGem = function(i, j) {
+		var tryAgain = true;
+		var gemType = mathutils.random(0, Cell.NUM_GEMS) | 0;
+		// check for horizontal triplets of the same color
+		if (i > 1 && this._cells[i-1][j].getGemType() == gemType && this._cells[i-2][j].getGemType() == gemType) {
+			return this.randomGem(i, j);
+		}
+		// check for vertical triplets of the same color
+		else if (j > 1 && this._cells[i][j-1].getGemType() == gemType && this._cells[i][j-2].getGemType() == gemType) {
+			return this.randomGem(i, j);
+		}
+		return gemType;
+	};
+
 	this.createCell = function(i, j) {
 		//TODO: add check about neighboring cells being of different color
 		var cellType = this.randomCell(i, j);
-		var cell = new Cell({cellType: cellType});
+		var gemType = this.randomGem(i, j);
+		var cell = new Cell({gemType: gemType, cellType: cellType});
 		cell.style.x = cell.style.x + (i * Cell.CELL_DIM.WIDTH);
 		cell.style.y = cell.style.y + (j * Cell.CELL_DIM.HEIGHT);
 		this._cells[i][j] = cell;
@@ -138,7 +153,6 @@ exports = Class(ui.View, function (supr) {
 	this.proceedAfterSmash = function() {
 		coords = this.nextSmashPivot();
 		if (coords) {
-			console.log("pivot: " + coords.x + ", " + coords.y);
 			this.smash(coords);
 			animate(this).wait(ANIM_INTERVAL_AUTOFALL).then(this.proceedAfterSmash.bind(this));
 		}
@@ -164,6 +178,7 @@ exports = Class(ui.View, function (supr) {
 			cell.clear();
 		}
 		var hash = this.buildHash(coords);
+		//TODO: does not handle case of horizontal smash of first row because clearedCells does not get built
 		for (var key in hash) {
 			var list = hash[key].sort();
 			var x = parseInt(key);
@@ -183,17 +198,19 @@ exports = Class(ui.View, function (supr) {
 					srcRow = srcRow - 1;
 					desRow = desRow - 1;
 				}
-				/*else if (desRow >= 0) {
+				else if (desRow >= 0) {
 					var destCell = this._cells[x][desRow];
 					var posX = destCell.style.x;
 					var posY = destCell.style.y;
 					var srcCell = clearedCells.pop();
 					srcCell.style.y = Cell.CELL_DIM.HEIGHT  * -1;
-					srcCell.renew();
+					srcCell.renew(this.randomGem());
 					animate(srcCell).now({x: posX, y: posY}, ANIM_INTERVAL_FALL);
+					//srcCell.style.x = posX;
+					//srcCell.style.y = posY;
 					this._cells[x][desRow] = cell;
 					desRow = desRow - 1;
-				}*/
+				}
 			}
 		}
 	};
@@ -262,9 +279,6 @@ exports = Class(ui.View, function (supr) {
 					newX = newX + 1;
 				}
 			}
-		}
-		for (var i = 0; i < coords.length; i++) {
-			console.log("SMASH: " + coords[i].x + ", " + coords[i].y);
 		}
 		return coords;
 	};

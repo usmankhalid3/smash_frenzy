@@ -1,6 +1,25 @@
 import ui.View;
-import src.Gem as Gem;
+import ui.ImageView;
 import math.util as mathutils;
+import ui.resource.Image as Image;
+
+var GEM_TYPES = {
+	PURPLE: 0,
+	ORANGE: 1,
+	BLUE: 2,
+	RED: 3,
+	GREEN: 4
+};
+
+var GEM_IMAGES = {
+	0: new Image({url: "resources/images/gems/purple.png"}),
+	1: new Image({url: "resources/images/gems/orange.png"}),
+	2: new Image({url: "resources/images/gems/blue.png"}),
+	3: new Image({url: "resources/images/gems/red.png"}),
+	4: new Image({url: "resources/images/gems/green.png"})
+};
+
+var NUM_GEMS = 5;
 
 var CELL_DIM = {
 	WIDTH: 34,
@@ -17,6 +36,7 @@ exports = Class(ui.View, function (supr) {
 
 		supr(this, 'init', [opts]);
 
+		this._gemType  = opts.gemType;
 		this._cellType = opts.cellType;
 
 		this.build();
@@ -24,18 +44,19 @@ exports = Class(ui.View, function (supr) {
 
 	this.build = function() {
 		if (this.getType() == CELL_TYPES.FILLED) {
-			this._gemType = this.randomGem();
-			this._gem = new Gem({gemType: this._gemType});
-			this.addSubview(this._gem);
+			var selectedGem = GEM_IMAGES[this._gemType];
+			this._gemView = new ui.ImageView({
+				superview: this,
+				image: selectedGem,
+				x: 2,
+				y: 2,
+				width: 30,
+				height: 30,
+			});
 		}
 		else {
 			//TODO: fill with semi-transparent image?
 		}
-	};
-
-	this.randomGem = function() {
-		var len = Gem.TYPES_OF_GEMS;
-		return mathutils.random(0, len) | 0;
 	};
 
 	this.getType = function() {
@@ -54,7 +75,7 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.getGemType = function() {
-		return this._gem.getType();
+		return this._gemType;
 	};
 
 	this.isFilled = function() {
@@ -62,15 +83,17 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.clear = function() {
-		this._gem.clear();
+		this._gemView.setImage();
 		//TODO: animate
 	};
 
-	this.renew = function() {
-		this._gemType = this.randomGem();
-		this._gem.renew({gemType: this._gemType});
+	this.renew = function(gemType) {
+		this._gemType = gemType;
+		var selectedGem = GEM_IMAGES[this._gemType]
+		this._gemView.setImage(selectedGem);
 	}
 });
 
 exports.CELL_TYPES = CELL_TYPES;
 exports.CELL_DIM = CELL_DIM;
+exports.NUM_GEMS = NUM_GEMS;

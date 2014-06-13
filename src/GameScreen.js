@@ -8,8 +8,6 @@ import animate;
 import ui.View;
 import ui.ImageView;
 import ui.TextView;
-
-import src.Gem as Gem;
 import src.Grid as Grid;
 /* Some game constants.
  */

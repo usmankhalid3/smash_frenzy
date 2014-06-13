@@ -59,6 +59,16 @@ exports = Class(ui.View, function (supr) {
 
 	this.isFilled = function() {
 		return this._cellType == CELL_TYPES.FILLED;
+	};
+
+	this.clear = function() {
+		this._gem.clear();
+		//TODO: animate
+	};
+
+	this.renew = function() {
+		this._gemType = this.randomGem();
+		this._gem.renew({gemType: this._gemType});
 	}
 });
 

@@ -47,6 +47,16 @@ exports = Class(ui.View, function (supr) {
 	this.getType = function() {
 		return this._gemType;
 	};
+
+	this.clear = function() {
+		this._gemView.setImage();
+	};
+
+	this.renew = function(gemType) {
+		this._gemType = gemType;
+		var selectedGem = GEM_IMAGES[this._gemType]
+		this._gemView.setImage(selectedGem);
+	}
 });
 
 exports.GEM_TYPES = GEM_TYPES;

@@ -6,11 +6,12 @@ import animate;
 
 var GRID_WIDTH  = 7,
 	GRID_HEIGHT = 7;
-	CELL_BOUND_TOP = 2,
-	CELL_BOUND_BOTTOM = 5,
-	CELL_BOUND_LEFT = 2,
-	CELL_BOUND_RIGHT = 5,
+	CELL_BOUND_TOP = 1,
+	CELL_BOUND_BOTTOM = 6,
+	CELL_BOUND_LEFT = 1,
+	CELL_BOUND_RIGHT = 6,
 	FILLED_CELL_PROB = 100,
+	TOTAL_EMPTY_CELLS = 5;
 	ANIM_INTERVAL_SWAP = 100,
 	ANIM_INTERVAL_REV  = 200,
 	ANIM_INTERVAL_FALL = 200,
@@ -31,6 +32,8 @@ exports = Class(ui.View, function (supr) {
 		this._cells = [];
 
 		this.setupGrid();
+
+		this._emptyCells = 0;
 
 		this.on("InputStart", this.onTouchStarted.bind(this));
 		this.on("InputMove", this.onDragStarted.bind(this));
@@ -61,7 +64,6 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.createCell = function(i, j) {
-		//TODO: add check about neighboring cells being of different color
 		var cellType = this.randomCell(i, j);
 		var gemType = this.randomGem(i, j);
 		var cell = new Cell({gemType: gemType, cellType: cellType});
@@ -72,12 +74,24 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.randomCell = function(i, j) {
+		//empty cells should be less than a threshold
+		if (this._emptyCells > TOTAL_EMPTY_CELLS) {
+			return Cell.CELL_TYPES.FILLED;
+		}
+		//Make sure empty cells are not adjacent
+		if (i > 1 && this._cells[i-1][j].getCellType() == Cell.CELL_TYPES.EMPTY) {
+			return Cell.CELL_TYPES.FILLED;
+		}
+		else if (j > 1 && this._cells[i][j-1].getCellType() == Cell.CELL_TYPES.EMPTY) {
+			return Cell.CELL_TYPES.FILLED;
+		}
 		//only generate empty cells within a centralized bounding box
 		if ((i < CELL_BOUND_LEFT || i > CELL_BOUND_RIGHT) || (j < CELL_BOUND_TOP || j > CELL_BOUND_BOTTOM)) {
 			return Cell.CELL_TYPES.FILLED;
 		}
 		var num = mathutils.random(0, 100) | 0;
 		if (num > FILLED_CELL_PROB) {
+			this._emptyCells++;
 			return Cell.CELL_TYPES.EMPTY;
 		}
 		else {
@@ -89,13 +103,6 @@ exports = Class(ui.View, function (supr) {
 		var cellX = Math.floor(pt.x / Cell.CELL_DIM.WIDTH);
 		var cellY = Math.floor(pt.y / Cell.CELL_DIM.HEIGHT);
 		return {x: cellX, y: cellY};
-	};
-
-	this.clearSelectedCell = function() {
-		if (this._selectedCell != null) {
-			//TODO: do the whole animation of releasing a cell
-			this._selectedCell = null;
-		}
 	};
 
 	this.onTouchStarted = function(evt, pt) {
@@ -116,17 +123,23 @@ exports = Class(ui.View, function (supr) {
 		return (c1.x == c2.x && c1.y == c2.y);
 	};
 
+	this.disableTouches = function() {
+		this.setHandleEvents(false, true);
+	};
+
+	this.enableTouches = function() {
+		this.setHandleEvents(true, false);
+	};
+
 	this.onDragStarted = function(evt, pt) {
 		if (this._selectedCell != null) {
 			var coords = this.getTouchedCell(pt);
 			if (this.sameCells(this._selectedCellCoords, coords) == false) {
 				var destCell = this._cells[coords.x][coords.y];
 				if (destCell && destCell.isFilled()) {
+					this.disableTouches();
 					this.swap(this._selectedCellCoords, coords);
 					animate(this).wait(ANIM_INTERVAL_REV).then(this.proceedAfterSwap.bind(this, this._selectedCellCoords, coords));
-				}
-				else {
-					//TODO anything to do here?
 				}
 				this._selectedCell.deselectCell();
 				this._selectedCellCoords = null;
@@ -141,9 +154,9 @@ exports = Class(ui.View, function (supr) {
 		var coords = this.trySmash(des)
 		if (coords.length < 3) {
 			this.swap(des, src); // cannot smash so reverse the swap
+			this.enableTouches();
 		}
 		else {
-			//TODO disable touches
 			this.smash(coords);
 			animate(this).wait(ANIM_INTERVAL_FALL * 2).then(this.proceedAfterSmash.bind(this));
 		}
@@ -154,6 +167,9 @@ exports = Class(ui.View, function (supr) {
 		if (coords) {
 			this.smash(coords);
 			animate(this).wait(ANIM_INTERVAL_AUTOFALL).then(this.proceedAfterSmash.bind(this));
+		}
+		else {
+			this.enableTouches();
 		}
 	};
 
@@ -179,7 +195,6 @@ exports = Class(ui.View, function (supr) {
 			cell.clear();
 		}
 		var hash = this.buildHash(coords);
-		//TODO: does not handle case of horizontal smash of first row because clearedCells does not get built
 		for (var key in hash) {
 			var list = hash[key].sort();
 			var x = parseInt(key);
@@ -193,19 +208,17 @@ exports = Class(ui.View, function (supr) {
 					var posY = this._cells[x][desRow].style.y;
 					var cell = this._cells[x][srcRow];
 					animate(cell).now({x: posX, y: posY}, ANIM_INTERVAL_FALL);
-					//clearedCells.push(this._cells[x][desRow]);
 					this._cells[x][desRow] = cell;
 					srcRow = srcRow - 1;
 					desRow = desRow - 1;
 				}
 			}
 			console.log("CLEARED: " + clearedCells.length);
-			animate(this).wait(ANIM_INTERVAL_FALL).then(this.fillGaps.bind(this, x, desRow, clearedCells));			
+			animate(this).wait(ANIM_INTERVAL_FALL).then(this.fillGaps.bind(this, x, desRow, clearedCells));
 		}
 	};
 
 	this.fillGaps = function(col, row, clearedCells) {
-		//var destCell = this._cells[col][row];
 		var posX = Cell.CELL_DIM.WIDTH * col;
 		while (row >= 0) {
 			var posY = Cell.CELL_DIM.HEIGHT * row;

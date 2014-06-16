@@ -2,6 +2,7 @@ import ui.View;
 import ui.ImageView;
 import math.util as mathutils;
 import ui.resource.Image as Image;
+import animate;
 
 var GEM_TYPES = {
 	PURPLE: 0,
@@ -43,7 +44,7 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.build = function() {
-		if (this.getType() == CELL_TYPES.FILLED) {
+		if (this._cellType == CELL_TYPES.FILLED) {
 			var selectedGem = GEM_IMAGES[this._gemType];
 			this._gemView = new ui.ImageView({
 				superview: this,
@@ -59,11 +60,8 @@ exports = Class(ui.View, function (supr) {
 		}
 	};
 
-	this.getType = function() {
-		switch(this._cellType) {
-			case CELL_TYPES.EMPTY : return CELL_TYPES.EMPTY;
-			case CELL_TYPES.FILLED : return CELL_TYPES.FILLED;
-		}
+	this.getCellType = function() {
+		return this._cellType;
 	};
 
 	this.selectCell = function() {
@@ -83,14 +81,15 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.clear = function() {
-		this._gemView.setImage();
-		//TODO: animate
+		//TODO: particle affects?
+		this._gemView.style.visible = false;
 	};
 
 	this.renew = function(gemType) {
 		this._gemType = gemType;
 		var selectedGem = GEM_IMAGES[this._gemType]
 		this._gemView.setImage(selectedGem);
+		this._gemView.style.visible = true;
 	}
 });
 

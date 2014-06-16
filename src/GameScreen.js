@@ -7,7 +7,7 @@ import device;
 import animate;
 import ui.View;
 import ui.ImageView;
-import ui.TextView;
+import ui.ScoreView;
 import src.Grid as Grid;
 /* Some game constants.
  */
@@ -54,13 +54,43 @@ exports = Class(ui.View, function (supr) {
 			image: "resources/images/ui/background.png"
 		});
 
+		this._score = new ui.ScoreView({
+			superview: this,
+			layout: 'box',
+			layoutHeight: 5,
+			x: 0,
+			y: 420,
+			characterData: {
+				"0": { "image": "resources/images/numbers/0.png" },
+			    "1": { "image": "resources/images/numbers/1.png" },
+			    "2": { "image": "resources/images/numbers/2.png" },
+			    "3": { "image": "resources/images/numbers/3.png" },
+			    "4": { "image": "resources/images/numbers/4.png" },
+			    "5": { "image": "resources/images/numbers/5.png" },
+			    "6": { "image": "resources/images/numbers/6.png" },
+			    "7": { "image": "resources/images/numbers/7.png" },
+			    "8": { "image": "resources/images/numbers/8.png" },
+			    "9": { "image": "resources/images/numbers/9.png" }
+			},
+			text: "0",
+		});
+
+		this._grid = new Grid({x: 40, y: 153});
+
+		this.addSubview(this._grid);
+
+		this.on('score:update', function(score) {
+			console.log("score updated");
+			this._score.setText(score);
+		});
+/*
 		//score label
 		new ui.TextView({
 			superview: this,
-			x: 40,
-			y: 400,
-			size: 38,
-			width: 30,
+			x: 30,
+			y: 410,
+			size: 58,
+			width: 50,
 			height: 30,
 			text: "Score: ",
 			color: "black",
@@ -74,32 +104,15 @@ exports = Class(ui.View, function (supr) {
 			superview: this,
 			x: 80,
 			y: 400,
-			size: 38,
-			width: 30,
-			height: 30,
+			width: 50,
+			height: 50,
 			text: "100",
-			color: "black",
+			color: "red",
+			shadowColor: "black",
 			horizontalAlign: "left",
 			autoSize: false
 		});
 
-		this._grid = new Grid({x: 40, y: 153});
-
-		this.addSubview(this._grid);
-/*
-		this._scoreboard = new ui.TextView({
-			superview: this,
-			x: 0,
-			y: 15,
-			width: 320,
-			height: 50,
-			autoSize: false,
-			size: 38,
-			verticalAlign: 'middle',
-			horizontalAlign: 'center',
-			wrap: false,
-			color: '#FFFFFF'
-		});
 */
 	};
 });

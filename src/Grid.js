@@ -35,6 +35,8 @@ exports = Class(ui.View, function (supr) {
 
 		this._emptyCells = 0;
 
+		this._score = 0;
+
 		this.on("InputStart", this.onTouchStarted.bind(this));
 		this.on("InputMove", this.onDragStarted.bind(this));
 	};
@@ -107,14 +109,14 @@ exports = Class(ui.View, function (supr) {
 
 	this.onTouchStarted = function(evt, pt) {
 		if (this._selectedCell == null) {
-			console.log("touched at: " + pt.x + ", " + pt.y);
+			//console.log("touched at: " + pt.x + ", " + pt.y);
 			var coords = this.getTouchedCell(pt);
 			var cell = this._cells[coords.x][coords.y];
 			if (cell && cell.isFilled()) {
 				cell.selectCell();
 				this._selectedCell = cell;
 				this._selectedCellCoords = coords;
-				console.log("selected cell: " + coords.x + ", " + coords.y);
+				//console.log("selected cell: " + coords.x + ", " + coords.y);
 			}
 		}
 	};
@@ -138,16 +140,22 @@ exports = Class(ui.View, function (supr) {
 				var destCell = this._cells[coords.x][coords.y];
 				if (destCell && destCell.isFilled()) {
 					this.disableTouches();
+					this._score = 0;
 					this.swap(this._selectedCellCoords, coords);
 					animate(this).wait(ANIM_INTERVAL_REV).then(this.proceedAfterSwap.bind(this, this._selectedCellCoords, coords));
 				}
 				this._selectedCell.deselectCell();
 				this._selectedCellCoords = null;
 				this._selectedCell = null;
-				console.log("cell deselected");
+				//console.log("cell deselected");
 			}
 			//console.log("moving at: " + pt.x + ", " + pt.y);
 		}
+	};
+
+	this.increaseScore = function(cells) {
+		this._score = this._score + (cells * 10);
+		this.emit("score:update", this._score);
 	};
 
 	this.proceedAfterSwap = function(src, des) {
@@ -186,6 +194,7 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.smash = function(coords) {
+		this.increaseScore(coords.length);
 		var clearedCells = new Array();
 		for (var i = 0; i < coords.length; i++) {
 			var x = coords[i].x;
@@ -198,7 +207,7 @@ exports = Class(ui.View, function (supr) {
 		for (var key in hash) {
 			var list = hash[key].sort();
 			var x = parseInt(key);
-			console.log(x + ": " + list);
+			//console.log(x + ": " + list);
 			var len = list.length;
 			var srcRow = list[0] - 1;
 			var desRow = list[len - 1];
@@ -213,7 +222,7 @@ exports = Class(ui.View, function (supr) {
 					desRow = desRow - 1;
 				}
 			}
-			console.log("CLEARED: " + clearedCells.length);
+			//console.log("CLEARED: " + clearedCells.length);
 			animate(this).wait(ANIM_INTERVAL_FALL).then(this.fillGaps.bind(this, x, desRow, clearedCells));
 		}
 	};

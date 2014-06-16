@@ -146,7 +146,6 @@ exports = Class(ui.View, function (supr) {
 			//TODO disable touches
 			this.smash(coords);
 			animate(this).wait(ANIM_INTERVAL_FALL * 2).then(this.proceedAfterSmash.bind(this));
-			
 		}
 	};
 
@@ -188,8 +187,8 @@ exports = Class(ui.View, function (supr) {
 			var desRow = list[len - 1];
 			var clearedCells = new Array();
 			if (srcRow < 0) {
-				for (var i = 0; i <= desRow; i++) {
-					clearedCells.push(this._cells[x][i]);
+				for (var r = 0; r <= desRow; r++) {
+					clearedCells.push(this._cells[x][r]);
 				}
 			}
 			else {
@@ -210,9 +209,8 @@ exports = Class(ui.View, function (supr) {
 
 	this.fillGaps = function(col, row, clearedCells) {
 		while (clearedCells && clearedCells.length > 0) {
-			var destCell = this._cells[col][row];
-			var posX = destCell.style.x;
-			var posY = destCell.style.y;
+			var posX = col * Cell.CELL_DIM.WIDTH;
+			var posY = row * Cell.CELL_DIM.HEIGHT;
 			var srcCell = clearedCells.pop();
 			srcCell.style.y = Cell.CELL_DIM.HEIGHT  * -1;
 			srcCell.renew(this.randomGem());

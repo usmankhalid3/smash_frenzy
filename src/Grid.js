@@ -209,8 +209,9 @@ exports = Class(ui.View, function (supr) {
 
 	this.fillGaps = function(col, row, clearedCells) {
 		while (clearedCells && clearedCells.length > 0) {
-			var posX = col * Cell.CELL_DIM.WIDTH;
-			var posY = row * Cell.CELL_DIM.HEIGHT;
+			var destCell = this._cells[col][row];
+			var posX = destCell.style.x;
+			var posY = Math.round(destCell.style.y);
 			var srcCell = clearedCells.pop();
 			srcCell.style.y = Cell.CELL_DIM.HEIGHT  * -1;
 			srcCell.renew(this.randomGem());

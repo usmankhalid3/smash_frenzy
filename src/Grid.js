@@ -13,8 +13,8 @@ var GRID_WIDTH  = 7,
 	FILLED_CELL_PROB = 100,
 	ANIM_INTERVAL_SWAP = 100,
 	ANIM_INTERVAL_REV  = 200,
-	ANIM_INTERVAL_FALL = 300,
-	ANIM_INTERVAL_AUTOFALL = 310;
+	ANIM_INTERVAL_FALL = 200,
+	ANIM_INTERVAL_AUTOFALL = 201;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -187,8 +187,13 @@ exports = Class(ui.View, function (supr) {
 			var srcRow = list[0] - 1;
 			var desRow = list[len - 1];
 			var clearedCells = new Array();
-			for (var j = 0; j < GRID_HEIGHT; j++) {
-				if (srcRow >= 0) {
+			if (srcRow < 0) {
+				for (var i = 0; i <= desRow; i++) {
+					clearedCells.push(this._cells[x][i]);
+				}
+			}
+			else {
+				for (var j = 0; j < GRID_HEIGHT && (srcRow >= 0); j++) {
 					var posX = this._cells[x][desRow].style.x;
 					var posY = this._cells[x][desRow].style.y;
 					var cell = this._cells[x][srcRow];
@@ -198,20 +203,22 @@ exports = Class(ui.View, function (supr) {
 					srcRow = srcRow - 1;
 					desRow = desRow - 1;
 				}
-				else if (desRow >= 0) {
-					var destCell = this._cells[x][desRow];
-					var posX = destCell.style.x;
-					var posY = destCell.style.y;
-					var srcCell = clearedCells.pop();
-					srcCell.style.y = Cell.CELL_DIM.HEIGHT  * -1;
-					srcCell.renew(this.randomGem());
-					animate(srcCell).now({x: posX, y: posY}, ANIM_INTERVAL_FALL);
-					//srcCell.style.x = posX;
-					//srcCell.style.y = posY;
-					this._cells[x][desRow] = cell;
-					desRow = desRow - 1;
-				}
 			}
+			animate(this).wait(ANIM_INTERVAL_FALL).then(this.fillGaps.bind(this, x, desRow, clearedCells));
+		}
+	};
+
+	this.fillGaps = function(col, row, clearedCells) {
+		while (clearedCells && clearedCells.length > 0) {
+			var destCell = this._cells[col][row];
+			var posX = destCell.style.x;
+			var posY = destCell.style.y;
+			var srcCell = clearedCells.pop();
+			srcCell.style.y = Cell.CELL_DIM.HEIGHT  * -1;
+			srcCell.renew(this.randomGem());
+			animate(srcCell).now({x: posX, y: posY}, ANIM_INTERVAL_FALL);
+			this._cells[col][row] = srcCell;
+			row = row - 1;
 		}
 	};
 

@@ -28,20 +28,7 @@ exports = Class(ui.View, function (supr) {
 
 		supr(this, 'init', [opts]);
 
-		var bg = new ui.ImageView({
-			superview: this,
-			x: 0,
-			y: 0,
-			width: device.width,
-			height: device.height,
-			image: "resources/images/ui/background.png"
-		});
-
-		this._grid = new Grid({x: 40, y: 153});
-
-		this.addSubview(this._grid);
-
-		//this.build();
+		this.build();
 	};
 	
 	/*
@@ -50,13 +37,56 @@ exports = Class(ui.View, function (supr) {
 	this.build = function () {
 		/* The start event is emitted from the start button via the main application.
 		 */
-		this.on('app:start', start_game_flow.bind(this));
+		//this.on('app:start', start_game_flow.bind(this));
 
 		/* The scoreboard displays the "ready, set, go" message,
 		 * the current score, and the end game message. We'll set
 		 * it as a hidden property on our class since we'll use it
 		 * throughout the game.
 		 */
+		 //background image
+		new ui.ImageView({
+			superview: this,
+			x: 0,
+			y: 0,
+			width: device.width,
+			height: device.height,
+			image: "resources/images/ui/background.png"
+		});
+
+		//score label
+		new ui.TextView({
+			superview: this,
+			x: 40,
+			y: 400,
+			size: 38,
+			width: 30,
+			height: 30,
+			text: "Score: ",
+			color: "black",
+			wrap: false,
+			horizontalAlign: "center",
+			autoSize: false
+		});
+
+		//score
+		this._score = new ui.TextView({
+			superview: this,
+			x: 80,
+			y: 400,
+			size: 38,
+			width: 30,
+			height: 30,
+			text: "100",
+			color: "black",
+			horizontalAlign: "left",
+			autoSize: false
+		});
+
+		this._grid = new Grid({x: 40, y: 153});
+
+		this.addSubview(this._grid);
+/*
 		this._scoreboard = new ui.TextView({
 			superview: this,
 			x: 0,
@@ -70,7 +100,7 @@ exports = Class(ui.View, function (supr) {
 			wrap: false,
 			color: '#FFFFFF'
 		});
-
+*/
 	};
 });
 

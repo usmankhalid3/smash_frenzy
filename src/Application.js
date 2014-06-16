@@ -28,8 +28,7 @@ exports = Class(GC.Application, function () {
 		rootView.push(gameScreen);
 
 		titleScreen.on('titlescreen:start', function () {
-			//sound.play('levelmusic');
-			console.log("start function called");
+			console.log("Loading game screen..");
 			rootView.push(gameScreen);
 			gamescreen.emit('app:start');
 		});

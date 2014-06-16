@@ -39,21 +39,18 @@ exports = Class(ImageView, function (supr) {
 	    		down: "resources/images/ui/startButton.png",
     			up:   "resources/images/ui/startButton.png"
   			},
+  			title: "Play Game!",
+  			text: {
+  				size: 25,
+  				color: "brown",
+  			},
   			on: {
-    			up: function () {
-    				this.emit("titlescreen:start");
-    			},
-  			}
-		});
-
-		new TextView({
-			superview: this,
-  			x: 70,
-  			y: 160,
-  			width:  180,
-			height: 75,
-			text: "Play Game!",
-			size: 25,
+  				up: function() {
+  					console.log("Play button clicked!");
+  					this.emit('titlescreen:start');
+  				}
+  			},
+  			clickOnce: true
 		});
 	};
 });

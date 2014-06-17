@@ -87,9 +87,23 @@ exports = Class(ui.View, function (supr) {
 
 	this.renew = function(gemType) {
 		this._gemType = gemType;
-		var selectedGem = GEM_IMAGES[this._gemType]
+		var selectedGem = GEM_IMAGES[this._gemType];
 		this._gemView.setImage(selectedGem);
 		this._gemView.style.visible = true;
+	};
+
+	this.setCellType = function(cellType) {
+		this._cellType = cellType;
+		if (this._gemView != null) {
+			this._gemView.removeFromSuperview();
+			this._gemView = null;
+		}
+		this.build();
+	};
+
+	this.resetCell = function(cellType, gemType) {
+		this._gemType = gemType;
+		this.setCellType(cellType);
 	}
 });
 

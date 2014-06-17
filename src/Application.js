@@ -24,13 +24,20 @@ exports = Class(GC.Application, function () {
 			clip: true,
 		});
 
-		//rootView.push(titleScreen);
-		rootView.push(gameScreen);
+		rootView.push(titleScreen);
+		//rootView.push(gameScreen);
 
 		titleScreen.on('titlescreen:start', function () {
-			console.log("Loading game screen..");
+			gameScreen.resetGame();
 			rootView.push(gameScreen);
-			gamescreen.emit('app:start');
+		});
+
+		gameScreen.on('gamescreen:decreaseMoves', function() {
+			gameScreen.decreaseMoves();
+		});
+
+		gameScreen.on('gamescreen:scoreUpdate', function(score) {
+			gameScreen.updateScore(score);
 		});
 
 		/* When the game screen has signalled that the game is over,

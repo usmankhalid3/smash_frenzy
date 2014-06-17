@@ -24,21 +24,33 @@ exports = Class(ui.View, function (supr) {
 			height: GRID_HEIGHT * Cell.CELL_DIM.HEIGHT
 		});
 
-		this._width = opts.width;
-		this._height = opts.height;
-
 		supr(this, 'init', [opts]);
 
+		this._width = opts.width;
+		this._height = opts.height;
 		this._cells = [];
+		this._emptyCells = 0;
+		this._score = 0;
 
 		this.setupGrid();
 
-		this._emptyCells = 0;
-
-		this._score = 0;
-
 		this.on("InputStart", this.onTouchStarted.bind(this));
 		this.on("InputMove", this.onDragStarted.bind(this));
+	};
+
+	this.resetGrid = function() {
+		this._emptyCells = 0;
+		this._score = 0;
+		this._selectedCellCoords = null;
+		this._selectedCell = null;
+		for (var i = 0; i < GRID_WIDTH; i++) {
+			for (var j = 0; j < GRID_HEIGHT; j++) {
+				var cell = this._cells[i][j];
+				var gemType = this.randomGem(i, j);
+				var cellType = this.randomCell(i, j);
+				cell.resetCell(cellType, gemType);
+			}
+		}
 	};
 
 	this.setupGrid = function() {
@@ -140,7 +152,6 @@ exports = Class(ui.View, function (supr) {
 				var destCell = this._cells[coords.x][coords.y];
 				if (destCell && destCell.isFilled()) {
 					this.disableTouches();
-					this._score = 0;
 					this.swap(this._selectedCellCoords, coords);
 					animate(this).wait(ANIM_INTERVAL_REV).then(this.proceedAfterSwap.bind(this, this._selectedCellCoords, coords));
 				}
@@ -155,7 +166,7 @@ exports = Class(ui.View, function (supr) {
 
 	this.increaseScore = function(cells) {
 		this._score = this._score + (cells * 10);
-		this.emit("score:update", this._score);
+		this.getSuperview().emit('gamescreen:scoreUpdate', this._score);
 	};
 
 	this.proceedAfterSwap = function(src, des) {
@@ -177,6 +188,7 @@ exports = Class(ui.View, function (supr) {
 			animate(this).wait(ANIM_INTERVAL_AUTOFALL).then(this.proceedAfterSmash.bind(this));
 		}
 		else {
+			this.getSuperview().emit('gamescreen:decreaseMoves');
 			this.enableTouches();
 		}
 	};

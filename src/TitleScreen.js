@@ -44,14 +44,12 @@ exports = Class(ImageView, function (supr) {
   				size: 25,
   				color: "brown",
   			},
-  			on: {
-  				up: function() {
-  					console.log("Play button clicked!");
-  					this.emit('titlescreen:start');
-  				}
-  			},
   			clickOnce: true
 		});
+
+    startButton.on('InputSelect', bind(this, function(){
+      this.emit('titlescreen:start');
+    }));
 	};
 });
 

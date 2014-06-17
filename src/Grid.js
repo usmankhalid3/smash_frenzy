@@ -145,10 +145,15 @@ exports = Class(ui.View, function (supr) {
 		this.setHandleEvents(true, false);
 	};
 
+	this.canMove = function(src, des) {
+		//only allow horizontal or veritcal move
+		return ((src.x == des.x && src.y != des.y) || (src.y == des.y && src.x != des.x));
+	};
+
 	this.onDragStarted = function(evt, pt) {
 		if (this._selectedCell != null) {
 			var coords = this.getTouchedCell(pt);
-			if (this.sameCells(this._selectedCellCoords, coords) == false) {
+			if (this.canMove(this._selectedCellCoords, coords)) {
 				var destCell = this._cells[coords.x][coords.y];
 				if (destCell && destCell.isFilled()) {
 					this.disableTouches();

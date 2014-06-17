@@ -46,6 +46,7 @@ exports = Class(GC.Application, function () {
 		gameScreen.on('gamescreen:end', function () {
 			//sound.stop('levelmusic');
 			rootView.pop();
+			titleScreen.showGameOverLabel(gameScreen.getTotalScore());
 		});
 	};
 	

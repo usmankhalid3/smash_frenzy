@@ -8,6 +8,7 @@ import animate;
 import ui.View;
 import ui.ImageView;
 import ui.ScoreView;
+import ui.TextView;
 import src.Grid as Grid;
 /* Some game constants.
  */
@@ -25,14 +26,8 @@ import src.Grid as Grid;
     "9": { "image": "resources/images/numbers/9.png" }
 };
 
-var score = 0,
-		high_score = 19,
-		hit_value = 1,
-		game_on = false,
-		lang = 'en';
-
 var ANIM_INTERVAL_GAME_END = 1000;
-var MAX_MOVES = 3;
+var MAX_MOVES = 1;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -48,19 +43,8 @@ exports = Class(ui.View, function (supr) {
 		this.build();
 	};
 	
-	/*
-	 * Layout the scoreboard and molehills.
-	 */
 	this.build = function () {
-		/* The start event is emitted from the start button via the main application.
-		 */
-		//this.on('app:start', start_game_flow.bind(this));
 
-		/* The scoreboard displays the "ready, set, go" message,
-		 * the current score, and the end game message. We'll set
-		 * it as a hidden property on our class since we'll use it
-		 * throughout the game.
-		 */
 		 //background image
 		new ui.ImageView({
 			superview: this,
@@ -69,6 +53,24 @@ exports = Class(ui.View, function (supr) {
 			width: device.width,
 			height: device.height,
 			image: "resources/images/ui/background.png"
+		});
+
+		new ui.TextView({
+			superview: this,
+			x: 40,
+			y: 430,
+			width: 50,
+			height: 50,
+			text: "Score"
+		});
+
+		new ui.TextView({
+			superview: this,
+			x: 240,
+			y: 430,
+			width: 50,
+			height: 50,
+			text: "Moves"
 		});
 
 		this._score = new ui.ScoreView({
@@ -115,6 +117,10 @@ exports = Class(ui.View, function (supr) {
 		if (this._moves <= 0) {
 			animate(this).wait(ANIM_INTERVAL_GAME_END).then(this.endGame.bind(this));
 		}
+	};
+
+	this.getTotalScore = function() {
+		return this._grid.getTotalScore();
 	};
 
 	this.endGame = function() {

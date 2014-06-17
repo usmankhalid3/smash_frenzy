@@ -170,15 +170,25 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.proceedAfterSwap = function(src, des) {
-		var coords = this.trySmash(des)
-		if (coords.length < 3) {
-			this.swap(des, src); // cannot smash so reverse the swap
-			this.enableTouches();
+		var coords = this.trySmash(src);
+		if (coords.length >= 3) { 	// try smashing at the source
+			this.doSmash(coords);
 		}
 		else {
-			this.smash(coords);
-			animate(this).wait(ANIM_INTERVAL_FALL * 2).then(this.proceedAfterSmash.bind(this));
+			coords = this.trySmash(des);  // try smashing at the destination
+			if (coords.length >= 3) {
+				this.doSmash(coords);
+			}
+			else {
+				this.swap(des, src); 	// not a valid move, so swap back
+				this.enableTouches();
+			}
 		}
+	};
+
+	this.doSmash = function(coords) {
+		this.smash(coords);
+		animate(this).wait(ANIM_INTERVAL_FALL * 2).then(this.proceedAfterSmash.bind(this));
 	};
 
 	this.proceedAfterSmash = function() {
@@ -319,6 +329,10 @@ exports = Class(ui.View, function (supr) {
 			}
 		}
 		return coords;
+	};
+
+	this.getTotalScore = function() {
+		return this._score;
 	};
 
 });

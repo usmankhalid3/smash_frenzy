@@ -27,7 +27,7 @@ import src.Grid as Grid;
 };
 
 var ANIM_INTERVAL_GAME_END = 1000;
-var MAX_MOVES = 1;
+var MAX_MOVES = 20;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -61,16 +61,20 @@ exports = Class(ui.View, function (supr) {
 			y: 430,
 			width: 50,
 			height: 50,
-			text: "Score"
+			text: "Score",
+			color: "orange",
+			shadowColor: "black",
 		});
 
 		new ui.TextView({
 			superview: this,
 			x: 240,
-			y: 430,
-			width: 50,
-			height: 50,
-			text: "Moves"
+			y: 425,
+			width: 60,
+			height: 60,
+			text: "Moves",
+			color: "orange",
+			shadowColor: "black",
 		});
 
 		this._score = new ui.ScoreView({

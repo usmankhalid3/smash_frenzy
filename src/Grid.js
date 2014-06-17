@@ -3,6 +3,7 @@ import ui.ImageView;
 import src.Cell as Cell;
 import math.util as mathutils;
 import animate;
+import src.soundcontroller as soundcontroller;
 
 var GRID_WIDTH  = 7,
 	GRID_HEIGHT = 7;
@@ -31,6 +32,7 @@ exports = Class(ui.View, function (supr) {
 		this._cells = [];
 		this._emptyCells = 0;
 		this._score = 0;
+		this._sounds = soundcontroller.getSound();
 
 		this.setupGrid();
 
@@ -217,6 +219,7 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.smash = function(coords) {
+		this.playSfx();
 		this.increaseScore(coords.length);
 		var clearedCells = new Array();
 		for (var i = 0; i < coords.length; i++) {
@@ -248,6 +251,11 @@ exports = Class(ui.View, function (supr) {
 			//console.log("CLEARED: " + clearedCells.length);
 			animate(this).wait(ANIM_INTERVAL_FALL).then(this.fillGaps.bind(this, x, desRow, clearedCells));
 		}
+	};
+
+	this.playSfx = function() {
+		//console.log("play sfx");
+		this._sounds.play('smash');	
 	};
 
 	this.fillGaps = function(col, row, clearedCells) {

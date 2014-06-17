@@ -27,7 +27,7 @@ import src.Grid as Grid;
 };
 
 var ANIM_INTERVAL_GAME_END = 1000;
-var MAX_MOVES = 20;
+var MAX_MOVES = 2;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {

@@ -7,6 +7,7 @@ import ui.StackView as StackView;
 //user imports
 import src.TitleScreen as TitleScreen;
 import src.GameScreen as GameScreen;
+import src.soundcontroller as soundcontroller;
 
 exports = Class(GC.Application, function () {
 
@@ -25,9 +26,11 @@ exports = Class(GC.Application, function () {
 		});
 
 		rootView.push(titleScreen);
-		//rootView.push(gameScreen);
+		
+		var sounds = soundcontroller.getSound();
 
 		titleScreen.on('titlescreen:start', function () {
+			sounds.play('levelmusic');
 			gameScreen.resetGame();
 			rootView.push(gameScreen);
 		});
@@ -44,7 +47,7 @@ exports = Class(GC.Application, function () {
 		 * show the title screen so that the user may play the game again.
 		 */
 		gameScreen.on('gamescreen:end', function () {
-			//sound.stop('levelmusic');
+			sounds.stop('levelmusic');
 			rootView.pop();
 			titleScreen.showGameOverLabel(gameScreen.getTotalScore());
 		});

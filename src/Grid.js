@@ -133,10 +133,6 @@ exports = Class(ui.View, function (supr) {
 		}
 	};
 
-	this.sameCells = function(c1, c2) {
-		return (c1.x == c2.x && c1.y == c2.y);
-	};
-
 	this.disableTouches = function() {
 		this.setHandleEvents(false, true);
 	};

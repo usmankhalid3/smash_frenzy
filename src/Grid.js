@@ -301,46 +301,58 @@ exports = Class(ui.View, function (supr) {
 		var x = pos.x;
 		var y = pos.y;
 		var destCell = this._cells[x][y];
-		var coords = new Array();
-		coords.push({x: x, y: y});
 
 		// try smashing vertically
+		var verticalCoords = new Array();
+		verticalCoords.push({x: x, y: y});
 		if (y > 0) {
 			var newY = y - 1;
 			while (newY >= 0 && (cell = this._cells[x][newY]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
-				coords.push({x: x, y: newY});
+				verticalCoords.push({x: x, y: newY});
 				newY = newY - 1;
 			}
 		}
 		if (y < GRID_HEIGHT) {
 			var newY = y + 1;
 			while (newY < GRID_HEIGHT && (cell = this._cells[x][newY]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
-				coords.push({x: x, y: newY});
+				verticalCoords.push({x: x, y: newY});
 				newY = newY + 1;
 			}
 		}
-		if (coords.length < 3) { // not enough vertical smash, so just discard
-			delete coords;
-			coords = new Array();
-			coords.push({x: x, y: y});
-		}
 
 		//try smashing horizontally
+		var horizontalCoords = new Array();
+		horizontalCoords.push({x: x, y: y});
 		if (x > 0) {
 			var newX = x - 1;
 			while (newX >= 0 && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
-				coords.push({x: newX, y: y});
+				horizontalCoords.push({x: newX, y: y});
 				newX = newX - 1;
 			}
 		}
 		if (x < GRID_WIDTH) {
 			var newX = x + 1;
 			while (newX < GRID_WIDTH && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
-				coords.push({x: newX, y: y});
+				horizontalCoords.push({x: newX, y: y});
 				newX = newX + 1;
 			}
 		}
-		return coords;
+
+		var coords = new Array();
+		if (verticalCoords.length >= 3) {
+			coords = coords.concat(verticalCoords);
+		}
+		if (horizontalCoords.length >= 3) {
+			coords = coords.concat(horizontalCoords);
+		}
+		return this.uniqueArray(coords);
+	};
+
+	this.uniqueArray = function(a) {
+    	return a.reduce(function(p, c) {
+	        if (p.indexOf(c) < 0) p.push(c);
+        		return p;
+    	}, []);
 	};
 
 	this.getTotalScore = function() {

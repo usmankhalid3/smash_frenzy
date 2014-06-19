@@ -303,6 +303,7 @@ exports = Class(ui.View, function (supr) {
 		var destCell = this._cells[x][y];
 		var coords = new Array();
 		coords.push({x: x, y: y});
+
 		// try smashing vertically
 		if (y > 0) {
 			var newY = y - 1;
@@ -318,23 +319,25 @@ exports = Class(ui.View, function (supr) {
 				newY = newY + 1;
 			}
 		}
-		if (coords.length < 3) { // not enough vertical smash, try horizontal
+		if (coords.length < 3) { // not enough vertical smash, so just discard
 			delete coords;
 			coords = new Array();
 			coords.push({x: x, y: y});
-			if (x > 0) {
-				var newX = x - 1;
-				while (newX >= 0 && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
-					coords.push({x: newX, y: y});
-					newX = newX - 1;
-				}
+		}
+
+		//try smashing horizontally
+		if (x > 0) {
+			var newX = x - 1;
+			while (newX >= 0 && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
+				coords.push({x: newX, y: y});
+				newX = newX - 1;
 			}
-			if (x < GRID_WIDTH) {
-				var newX = x + 1;
-				while (newX < GRID_WIDTH && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
-					coords.push({x: newX, y: y});
-					newX = newX + 1;
-				}
+		}
+		if (x < GRID_WIDTH) {
+			var newX = x + 1;
+			while (newX < GRID_WIDTH && (cell = this._cells[newX][y]) && cell.isFilled() && cell.getGemType() == destCell.getGemType()) {
+				coords.push({x: newX, y: y});
+				newX = newX + 1;
 			}
 		}
 		return coords;
